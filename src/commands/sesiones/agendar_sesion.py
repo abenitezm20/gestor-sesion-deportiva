@@ -7,6 +7,7 @@ from src.commands.base_command import BaseCommand
 from src.errors.errors import BadRequest, SesionYaAgendada
 from src.models.db import db_session
 from src.models.sesion import EstadoSesionEnum, Sesion
+from src.utils.seguridad_utils import UsuarioToken
 from src.utils.str_utils import str_none_or_empty
 
 
@@ -14,7 +15,8 @@ logger = logging.getLogger(__name__)
 
 
 class AgendarSesion(BaseCommand):
-    def __init__(self, **info):
+    def __init__(self, usuario_token: UsuarioToken, **info):
+        self.usuario_token = usuario_token
 
         if str_none_or_empty(info.get('id_plan_deportista')):
             logger.error("ID Plan deportista es obligatorio")
@@ -44,6 +46,7 @@ class AgendarSesion(BaseCommand):
 
         sesion: Sesion = Sesion(
             id_plan_deportista=self.id_plan_deportista,
+            email=self.usuario_token.email,
             fecha_sesion=self.fecha_sesion,
             estado=EstadoSesionEnum.agendada)
 

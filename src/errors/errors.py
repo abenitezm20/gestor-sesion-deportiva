@@ -23,6 +23,11 @@ class Forbidden(ApiError):
     description = "forbidden"
 
 
+class TokenNotFound(ApiError):
+    code = 403
+    description = "token_not_found"
+
+
 class ResourceNotFound(ApiError):
     code = 404
     description = "resource_not_found"
