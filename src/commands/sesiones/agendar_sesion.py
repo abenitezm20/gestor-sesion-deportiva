@@ -1,7 +1,10 @@
+import datetime
 import logging
 
+from sqlalchemy import func
+from datetime import datetime
 from src.commands.base_command import BaseCommand
-from src.errors.errors import BadRequest
+from src.errors.errors import BadRequest, SesionYaAgendada
 from src.models.db import db_session
 from src.models.sesion import EstadoSesionEnum, Sesion
 from src.utils.str_utils import str_none_or_empty
@@ -27,6 +30,17 @@ class AgendarSesion(BaseCommand):
     def execute(self):
         logger.info(
             f"Agendando sesion, plan deportista: {self.id_plan_deportista}, fecha: {self.fecha_sesion}")
+
+        # Validacion que no exista una sesion ya agendada para el mismo dia
+        fecha_actual = datetime.now().date()
+        sesiones = db_session.query(Sesion).filter(
+            Sesion.id_plan_deportista == self.id_plan_deportista,
+            Sesion.estado == EstadoSesionEnum.agendada.value,
+            func.DATE(Sesion.fecha_sesion) == fecha_actual).all()
+        if sesiones:
+            logger.error(
+                f"Ya existe una sesion agendada para el dia {fecha_actual}")
+            raise SesionYaAgendada
 
         sesion: Sesion = Sesion(
             id_plan_deportista=self.id_plan_deportista,

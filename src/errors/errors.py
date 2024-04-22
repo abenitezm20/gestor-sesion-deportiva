@@ -8,6 +8,11 @@ class BadRequest(ApiError):
     description = "bad_request"
 
 
+class SesionYaAgendada(ApiError):
+    code = 400
+    description = "sesion_ya_agendada"
+
+
 class Unauthorized(ApiError):
     code = 401
     description = "unauthorized"
