@@ -10,7 +10,7 @@ from src.utils.str_utils import str_none_or_empty
 logger = logging.getLogger(__name__)
 
 
-class AsignarPlan(BaseCommand):
+class AgendarSesion(BaseCommand):
     def __init__(self, **info):
 
         if str_none_or_empty(info.get('id_plan_deportista')):
@@ -25,19 +25,21 @@ class AsignarPlan(BaseCommand):
         self.fecha_sesion = info.get('fecha_sesion')
 
     def execute(self):
-        logger.info("Asignando plan")
+        logger.info(
+            f"Agendando sesion, plan deportista: {self.id_plan_deportista}, fecha: {self.fecha_sesion}")
 
         sesion: Sesion = Sesion(
             id_plan_deportista=self.id_plan_deportista,
-            fecha_inicio=self.fecha_sesion,
-            estado='agendada')
+            fecha_sesion=self.fecha_sesion,
+            estado=EstadoSesionEnum.agendada)
 
         db_session.add(sesion)
         db_session.commit()
         logger.info(f'Sesion asignada {sesion.id}')
 
         resp = {
-            'id_sesion': str(sesion.id),
+            'id': str(sesion.id),
+            'fecha_sesion': self.fecha_sesion
         }
 
         return resp
