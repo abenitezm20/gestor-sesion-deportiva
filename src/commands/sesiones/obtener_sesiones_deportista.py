@@ -4,11 +4,9 @@ import logging
 from sqlalchemy import func
 from datetime import datetime
 from src.commands.base_command import BaseCommand
-from src.errors.errors import BadRequest, SesionYaAgendada
-from src.models.db import db_session
+from src.errors.errors import BadRequest
 from src.models.resultado_sesion import ResultadoSesion
-from src.models.sesion import EstadoSesionEnum, Sesion
-from src.utils.seguridad_utils import UsuarioToken
+from src.models.sesion import Sesion
 from src.utils.str_utils import str_none_or_empty
 
 
