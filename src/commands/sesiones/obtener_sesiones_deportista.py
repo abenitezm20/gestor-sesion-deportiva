@@ -51,12 +51,12 @@ class ObtenerSesionesDeportista(BaseCommand):
     def _consulta_por_fecha(self):
 
         filtro_fecha = datetime.fromisoformat(self.fecha)
-        año = filtro_fecha.year
+        anio = filtro_fecha.year
         mes = filtro_fecha.month
 
         resultados_mes = ResultadoSesion.query.join(Sesion).filter(
             Sesion.email == self.email,
-            func.extract('year', Sesion.fecha_sesion) == año,
+            func.extract('year', Sesion.fecha_sesion) == anio,
             func.extract('month', Sesion.fecha_sesion) == mes
         ).all()
 
