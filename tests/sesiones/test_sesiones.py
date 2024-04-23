@@ -99,3 +99,34 @@ class TestSesiones():
 
             assert response.status_code == 200
             assert len(response_json) > 0
+
+    @patch('requests.post')
+    def test_agendar_sesion(self, mock_post):
+        with app.test_client() as test_client:
+            email = fake.email()
+
+            mock_response = MagicMock()
+            mock_response.status_code = 200
+            mock_response.json.return_value = {
+                'token_valido': True, 'email': email}
+            mock_post.return_value = mock_response
+
+            req = {
+                'id_plan_deportista': str(uuid.uuid4()),
+                'fecha_sesion': '2024-03-22T12:00:00'
+            }
+
+            headers = {'Authorization': 'Bearer 123'}
+            response = test_client.post(
+                '/gestor-sesion-deportiva/sesiones/agendar_sesion', headers=headers, json=req)
+            response_json = json.loads(response.data)
+
+            assert response.status_code == 200
+            assert 'result' in response_json
+            assert 'id' in response_json['result']
+            assert 'fecha_sesion' in response_json['result']
+
+            sesion = db_session.query(Sesion).filter(
+                Sesion.id == response_json['result']['id']).first()
+            db_session.delete(sesion)
+            db_session.commit()
