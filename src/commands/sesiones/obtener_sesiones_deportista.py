@@ -20,7 +20,6 @@ class ObtenerSesionesDeportista(BaseCommand):
             raise BadRequest('El email del deportista es requerido')
 
         self.email = info.get('email')
-        self.fecha = info.get('fecha')
 
     def execute(self):
         resultados = self._consulta_todas()

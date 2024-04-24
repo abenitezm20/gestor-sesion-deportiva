@@ -70,31 +70,8 @@ class TestSesiones():
             mock_post.return_value = mock_response
 
             headers = {'Authorization': 'Bearer 123'}
-            response = test_client.post(
-                '/gestor-sesion-deportiva/sesiones/obtener_sesiones_deportista', headers=headers, json={})
-            response_json = json.loads(response.data)
-
-            assert response.status_code == 200
-            assert len(response_json) > 0
-
-    @patch('requests.post')
-    def test_obtener_sesiones_deportista_fecha(self, mock_post, setup_data: dict):
-        with app.test_client() as test_client:
-            sesion: Sesion = setup_data['sesion']
-
-            mock_response = MagicMock()
-            mock_response.status_code = 200
-            mock_response.json.return_value = {
-                'token_valido': True, 'email': sesion.email}
-            mock_post.return_value = mock_response
-
-            req = {
-                'fecha': sesion.fecha_sesion.strftime("%Y-%m-%dT%H:%M:%S")
-            }
-
-            headers = {'Authorization': 'Bearer 123'}
-            response = test_client.post(
-                '/gestor-sesion-deportiva/sesiones/obtener_sesiones_deportista', headers=headers, json=req)
+            response = test_client.get(
+                '/gestor-sesion-deportiva/sesiones/obtener_sesiones_deportista', headers=headers)
             response_json = json.loads(response.data)
 
             assert response.status_code == 200
