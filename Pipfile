@@ -12,6 +12,7 @@ psycopg2 = "*"
 requests = "*"
 gunicorn = "*"
 PyJWT = "*"
+flask-cors = "*"
 
 [dev-packages]
 faker = "*"
