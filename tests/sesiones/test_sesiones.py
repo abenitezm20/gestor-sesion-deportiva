@@ -44,13 +44,26 @@ def setup_data():
         session.add(resultado_sesion)
         session.commit()
 
+        # sesion para pruebas de iniciar y finalizar
+        info_sesion_prueba = {
+            'id_plan_deportista': uuid.uuid4(),
+            'email': random_sesion.email,
+            'estado': EstadoSesionEnum.agendada,
+            'fecha_sesion': '2024-05-04T12:00:00'
+        }
+        sesion_prueba: Sesion = Sesion(**info_sesion_prueba)
+        session.add(sesion_prueba)
+        session.commit()
+
         yield {
             'email': random_sesion.email,
-            'resultado_sesion': resultado_sesion
+            'resultado_sesion': resultado_sesion,
+            'id_sesion_prueba': sesion_prueba.id,
         }
 
         session.delete(resultado_sesion)
         session.delete(random_sesion)
+        session.delete(sesion_prueba)
         session.commit()
 
         logger.info("Fin TestSesiones")
@@ -132,3 +145,235 @@ class TestSesiones():
             assert 'vo2' in response_json['result']
             assert len(response_json['result']['ftp']) > 0
             assert len(response_json['result']['vo2']) > 0
+
+    @patch('requests.post')
+    def test_iniciar_sesion_no_registrada(self, mock_post, setup_data: dict):
+        with app.test_client() as test_client:
+            email: str = setup_data['email']
+
+            mock_response = MagicMock()
+            mock_response.status_code = 200
+            mock_response.json.return_value = {
+                'token_valido': True, 'email': email}
+            mock_post.return_value = mock_response
+
+            req = {
+                'id_sesion': uuid.uuid4()
+            }
+
+            headers = {'Authorization': 'Bearer 123'}
+            response = test_client.post(
+                '/gestor-sesion-deportiva/sesiones/iniciar_sesion_deportiva', headers=headers, json=req)
+
+            assert response.status_code == 400
+
+    @patch('requests.post')
+    def test_iniciar_sesion_sin_id(self, mock_post, setup_data: dict):
+        with app.test_client() as test_client:
+            email: str = setup_data['email']
+
+            mock_response = MagicMock()
+            mock_response.status_code = 200
+            mock_response.json.return_value = {
+                'token_valido': True, 'email': email}
+            mock_post.return_value = mock_response
+
+            req = {
+                'id_sesion': None
+            }
+
+            headers = {'Authorization': 'Bearer 123'}
+            response = test_client.post(
+                '/gestor-sesion-deportiva/sesiones/iniciar_sesion_deportiva', headers=headers, json=req)
+
+            assert response.status_code == 400
+
+    @patch('requests.post')
+    def test_iniciar_sesion_exitoso(self, mock_post, setup_data: dict):
+        with app.test_client() as test_client:
+            email: str = setup_data['email']
+
+            mock_response = MagicMock()
+            mock_response.status_code = 200
+            mock_response.json.return_value = {
+                'token_valido': True, 'email': email}
+            mock_post.return_value = mock_response
+
+            id_sesion_prueba: str = setup_data['id_sesion_prueba']
+
+            req = {
+                'id_sesion': id_sesion_prueba
+            }
+
+            headers = {'Authorization': 'Bearer 123'}
+            response = test_client.post(
+                '/gestor-sesion-deportiva/sesiones/iniciar_sesion_deportiva', headers=headers, json=req)
+            response_json = json.loads(response.data)
+
+            assert response.status_code == 200
+            assert 'result' in response_json
+            assert 'estado' in response_json['result']
+            assert 'id_sesion' in response_json['result']
+
+    @patch('requests.post')
+    def test_finalizar_sesion_sin_id(self, mock_post, setup_data: dict):
+        with app.test_client() as test_client:
+            email: str = setup_data['email']
+
+            mock_response = MagicMock()
+            mock_response.status_code = 200
+            mock_response.json.return_value = {
+                'token_valido': True, 'email': email}
+            mock_post.return_value = mock_response
+
+            req = {
+                'id_sesion': None
+            }
+
+            headers = {'Authorization': 'Bearer 123'}
+            response = test_client.post(
+                '/gestor-sesion-deportiva/sesiones/finalizar_sesion_deportiva', headers=headers, json=req)
+
+            assert response.status_code == 400
+
+    @patch('requests.post')
+    def test_finalizar_sesion_sin_vo2(self, mock_post, setup_data: dict):
+        with app.test_client() as test_client:
+            email: str = setup_data['email']
+
+            mock_response = MagicMock()
+            mock_response.status_code = 200
+            mock_response.json.return_value = {
+                'token_valido': True, 'email': email}
+            mock_post.return_value = mock_response
+
+            id_sesion_prueba: str = setup_data['id_sesion_prueba']
+
+            req = {
+                'id_sesion': id_sesion_prueba,
+                'ftp': 2.5,
+                'fecha_inicio': '2024-05-04T12:00:00',
+                'fecha_fin': '2024-05-04T12:30:00'
+            }
+
+            headers = {'Authorization': 'Bearer 123'}
+            response = test_client.post(
+                '/gestor-sesion-deportiva/sesiones/finalizar_sesion_deportiva', headers=headers, json=req)
+
+            assert response.status_code == 400
+
+    @patch('requests.post')
+    def test_finalizar_sesion_sin_ftp(self, mock_post, setup_data: dict):
+        with app.test_client() as test_client:
+            email: str = setup_data['email']
+
+            mock_response = MagicMock()
+            mock_response.status_code = 200
+            mock_response.json.return_value = {
+                'token_valido': True, 'email': email}
+            mock_post.return_value = mock_response
+
+            id_sesion_prueba: str = setup_data['id_sesion_prueba']
+
+            req = {
+                'id_sesion': id_sesion_prueba,
+                'vo2_max': 47,
+                'fecha_inicio': '2024-05-04T12:00:00',
+                'fecha_fin': '2024-05-04T12:30:00'
+            }
+
+            headers = {'Authorization': 'Bearer 123'}
+            response = test_client.post(
+                '/gestor-sesion-deportiva/sesiones/finalizar_sesion_deportiva', headers=headers, json=req)
+
+            assert response.status_code == 400
+
+    @patch('requests.post')
+    def test_finalizar_sesion_sin_fecha_inicio(self, mock_post, setup_data: dict):
+        with app.test_client() as test_client:
+            email: str = setup_data['email']
+
+            mock_response = MagicMock()
+            mock_response.status_code = 200
+            mock_response.json.return_value = {
+                'token_valido': True, 'email': email}
+            mock_post.return_value = mock_response
+
+            id_sesion_prueba: str = setup_data['id_sesion_prueba']
+
+            req = {
+                'id_sesion': id_sesion_prueba,
+                'vo2_max': 47,
+                'ftp': 2.5,
+                'fecha_fin': '2024-05-04T12:30:00'
+            }
+
+            headers = {'Authorization': 'Bearer 123'}
+            response = test_client.post(
+                '/gestor-sesion-deportiva/sesiones/finalizar_sesion_deportiva', headers=headers, json=req)
+
+            assert response.status_code == 400
+
+    @patch('requests.post')
+    def test_finalizar_sesion_sin_fecha_fin(self, mock_post, setup_data: dict):
+        with app.test_client() as test_client:
+            email: str = setup_data['email']
+
+            mock_response = MagicMock()
+            mock_response.status_code = 200
+            mock_response.json.return_value = {
+                'token_valido': True, 'email': email}
+            mock_post.return_value = mock_response
+
+            id_sesion_prueba: str = setup_data['id_sesion_prueba']
+
+            req = {
+                'id_sesion': id_sesion_prueba,
+                'vo2_max': 47,
+                'ftp': 2.5,
+                'fecha_inicio': '2024-05-04T12:00:00',
+            }
+
+            headers = {'Authorization': 'Bearer 123'}
+            response = test_client.post(
+                '/gestor-sesion-deportiva/sesiones/finalizar_sesion_deportiva', headers=headers, json=req)
+
+            assert response.status_code == 400
+
+    @patch('requests.post')
+    def test_finalizar_sesion_exitoso(self, mock_post, setup_data: dict):
+        with app.test_client() as test_client:
+            email: str = setup_data['email']
+
+            mock_response = MagicMock()
+            mock_response.status_code = 200
+            mock_response.json.return_value = {
+                'token_valido': True, 'email': email}
+            mock_post.return_value = mock_response
+
+            id_sesion_prueba: str = setup_data['id_sesion_prueba']
+
+            req = {
+                'id_sesion': id_sesion_prueba,
+                'vo2_max': 47,
+                'ftp': 2.5,
+                'fecha_inicio': '2024-05-04T12:00:00',
+                'fecha_fin': '2024-05-04T12:30:00'
+            }
+
+            headers = {'Authorization': 'Bearer 123'}
+            response = test_client.post(
+                '/gestor-sesion-deportiva/sesiones/finalizar_sesion_deportiva', headers=headers, json=req)
+            response_json = json.loads(response.data)
+
+            assert response.status_code == 200
+            assert 'result' in response_json
+            assert 'estado' in response_json['result']
+            assert 'id_sesion' in response_json['result']
+
+            with db_session() as session:
+                resultado_sesion = session.query(ResultadoSesion).filter(
+                    ResultadoSesion.id_sesion == id_sesion_prueba).first()
+
+                session.delete(resultado_sesion)
+                session.commit()
