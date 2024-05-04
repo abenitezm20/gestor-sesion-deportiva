@@ -28,6 +28,7 @@ class ObtenerSesionesDeportista(BaseCommand):
         tmp: ResultadoSesion
         for tmp in resultados:
             resultado = {
+                'id_sesion': tmp.id_sesion,
                 'id_plan_deportista': tmp.id_plan_deportista,
                 'fecha_inicio': tmp.resultado_fecha_inicio,
                 'fecha_fin': tmp.resultado_fecha_fin,
@@ -43,6 +44,7 @@ class ObtenerSesionesDeportista(BaseCommand):
     def _consulta_todas(self):
         query = """
             select
+                s.id id_sesion,
                 s.id_plan_deportista id_plan_deportista,
                 s.estado estado_sesion,
                 to_char(s.fecha_sesion, 'YYYY-MM-DD"T"HH24:MI:SS') fecha_sesion,
