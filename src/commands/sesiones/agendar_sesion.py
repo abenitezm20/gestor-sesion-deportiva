@@ -33,30 +33,31 @@ class AgendarSesion(BaseCommand):
         logger.info(
             f"Agendando sesion, plan deportista: {self.id_plan_deportista}, fecha: {self.fecha_sesion}")
 
-        # Validacion que no exista una sesion ya agendada para el mismo dia
-        fecha_actual = datetime.now().date()
-        sesiones = db_session.query(Sesion).filter(
-            Sesion.id_plan_deportista == self.id_plan_deportista,
-            Sesion.estado == EstadoSesionEnum.agendada.value,
-            func.DATE(Sesion.fecha_sesion) == fecha_actual).all()
-        if sesiones:
-            logger.error(
-                f"Ya existe una sesion agendada para el dia {fecha_actual}")
-            raise SesionYaAgendada
+        with db_session() as session:
+            # Validacion que no exista una sesion ya agendada para el mismo dia
+            fecha_actual = datetime.now().date()
+            sesiones = session.query(Sesion).filter(
+                Sesion.id_plan_deportista == self.id_plan_deportista,
+                Sesion.estado == EstadoSesionEnum.agendada.value,
+                func.DATE(Sesion.fecha_sesion) == fecha_actual).all()
+            if sesiones:
+                logger.error(
+                    f"Ya existe una sesion agendada para el dia {fecha_actual}")
+                raise SesionYaAgendada
 
-        sesion: Sesion = Sesion(
-            id_plan_deportista=self.id_plan_deportista,
-            email=self.usuario_token.email,
-            fecha_sesion=self.fecha_sesion,
-            estado=EstadoSesionEnum.agendada)
+            sesion: Sesion = Sesion(
+                id_plan_deportista=self.id_plan_deportista,
+                email=self.usuario_token.email,
+                fecha_sesion=self.fecha_sesion,
+                estado=EstadoSesionEnum.agendada)
 
-        db_session.add(sesion)
-        db_session.commit()
-        logger.info(f'Sesion asignada {sesion.id}')
+            session.add(sesion)
+            session.commit()
+            logger.info(f'Sesion asignada {sesion.id}')
 
-        resp = {
-            'id': str(sesion.id),
-            'fecha_sesion': self.fecha_sesion
-        }
+            resp = {
+                'id': str(sesion.id),
+                'fecha_sesion': self.fecha_sesion
+            }
 
-        return resp
+            return resp
