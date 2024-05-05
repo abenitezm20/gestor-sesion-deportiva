@@ -13,6 +13,11 @@ class SesionYaAgendada(ApiError):
     description = "sesion_ya_agendada"
 
 
+class AppRegistrada(ApiError):
+    code = 400
+    description = "app_ya_registrada"
+
+
 class Unauthorized(ApiError):
     code = 401
     description = "unauthorized"
