@@ -54,6 +54,7 @@ class ObtenerSesionesDeportista(BaseCommand):
                 to_char(rs.fecha_fin, 'YYYY-MM-DD"T"HH24:MI:SS') resultado_fecha_fin
             from sesion s
             left join resultado_sesion rs on (s.id = rs.id_sesion)
+            where s.email = :email_param
             order by fecha_fin desc
         """
-        return db_session.execute(text(query))
+        return db_session.execute(text(query), {'email_param': self.email})
