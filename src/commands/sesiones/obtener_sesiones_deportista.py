@@ -42,19 +42,20 @@ class ObtenerSesionesDeportista(BaseCommand):
         return resp
 
     def _consulta_todas(self):
-        query = """
-            select
-                s.id id_sesion,
-                s.id_plan_deportista id_plan_deportista,
-                s.estado estado_sesion,
-                to_char(s.fecha_sesion, 'YYYY-MM-DD"T"HH24:MI:SS') fecha_sesion,
-                rs.vo2_max vo2_max,
-                rs.ftp ftp,
-                to_char(rs.fecha_inicio, 'YYYY-MM-DD"T"HH24:MI:SS') resultado_fecha_inicio,
-                to_char(rs.fecha_fin, 'YYYY-MM-DD"T"HH24:MI:SS') resultado_fecha_fin
-            from sesion s
-            left join resultado_sesion rs on (s.id = rs.id_sesion)
-            where s.email = :email_param
-            order by fecha_fin desc
-        """
-        return db_session.execute(text(query), {'email_param': self.email})
+        with db_session() as session:
+            query = """
+                select
+                    s.id id_sesion,
+                    s.id_plan_deportista id_plan_deportista,
+                    s.estado estado_sesion,
+                    to_char(s.fecha_sesion, 'YYYY-MM-DD"T"HH24:MI:SS') fecha_sesion,
+                    rs.vo2_max vo2_max,
+                    rs.ftp ftp,
+                    to_char(rs.fecha_inicio, 'YYYY-MM-DD"T"HH24:MI:SS') resultado_fecha_inicio,
+                    to_char(rs.fecha_fin, 'YYYY-MM-DD"T"HH24:MI:SS') resultado_fecha_fin
+                from sesion s
+                left join resultado_sesion rs on (s.id = rs.id_sesion)
+                where s.email = :email_param
+                order by fecha_fin desc
+            """
+            return session.execute(text(query), {'email_param': self.email})
